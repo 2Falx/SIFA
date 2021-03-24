@@ -11,10 +11,10 @@ BATCH_SIZE = int(config['batch_size'])
 POOL_SIZE = int(config['pool_size'])
 
 # The height of each image.
-IMG_HEIGHT = 256
+IMG_HEIGHT = 352
 
 # The width of each image.
-IMG_WIDTH = 256
+IMG_WIDTH = 352
 
 ngf = 32
 ndf = 64
@@ -171,8 +171,8 @@ def build_generator_resnet_9blocks(inputgen, inputimg, name="generator", skip=Fa
         o_r8 = build_resnet_block_ins(o_r7, ngf * 4, "r8", padding)
         o_r9 = build_resnet_block_ins(o_r8, ngf * 4, "r9", padding)
 
-        o_c4 = layers.general_deconv2d(o_r9, [BATCH_SIZE, 128, 128, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c4", norm_type='Ins')
-        o_c5 = layers.general_deconv2d(o_c4, [BATCH_SIZE, 256, 256, ngf], ngf, ks, ks, 2, 2, 0.02, "SAME", "c5", norm_type='Ins')
+        o_c4 = layers.general_deconv2d(o_r9, [BATCH_SIZE, 176, 176, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c4", norm_type='Ins')
+        o_c5 = layers.general_deconv2d(o_c4, [BATCH_SIZE, 352, 352, ngf], ngf, ks, ks, 2, 2, 0.02, "SAME", "c5", norm_type='Ins')
         o_c6 = layers.general_conv2d_ga(o_c5, 1, f, f, 1, 1, 0.02, "SAME", "c6", do_norm=False, do_relu=False)
 
         if skip is True:
@@ -233,9 +233,9 @@ def build_decoder(inputde, inputimg, name='decoder', skip=False):
         o_r2 = build_resnet_block(o_r1, ngf * 4, "r2", padding, norm_type='Ins')
         o_r3 = build_resnet_block(o_r2, ngf * 4, "r3", padding, norm_type='Ins')
         o_r4 = build_resnet_block(o_r3, ngf * 4, "r4", padding, norm_type='Ins')
-        o_c3 = layers.general_deconv2d(o_r4, [BATCH_SIZE, 64, 64, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c3", norm_type='Ins')
-        o_c4 = layers.general_deconv2d(o_c3, [BATCH_SIZE, 128, 128, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c4", norm_type='Ins')
-        o_c5 = layers.general_deconv2d(o_c4, [BATCH_SIZE, 256, 256, ngf], ngf, ks, ks, 2, 2, 0.02, "SAME", "c5", norm_type='Ins')
+        o_c3 = layers.general_deconv2d(o_r4, [BATCH_SIZE, 88, 88, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c3", norm_type='Ins')
+        o_c4 = layers.general_deconv2d(o_c3, [BATCH_SIZE, 176, 176, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c4", norm_type='Ins')
+        o_c5 = layers.general_deconv2d(o_c4, [BATCH_SIZE, 352, 352, ngf], ngf, ks, ks, 2, 2, 0.02, "SAME", "c5", norm_type='Ins')
         o_c6 = layers.general_conv2d(o_c5, 1, f, f, 1, 1, 0.02, "SAME", "c6", do_norm=False, do_relu=False)
 
         if skip is True:
@@ -252,7 +252,7 @@ def build_segmenter(inputse, name='segmenter', keep_rate=0.75):
         k1 = 1
 
         o_c8 = layers.general_conv2d(inputse, 5, k1, k1, 1, 1, 0.01, 'SAME', 'c8', do_norm=False, do_relu=False, keep_rate=keep_rate)
-        out_seg = tf.image.resize_images(o_c8, (256, 256))
+        out_seg = tf.image.resize_images(o_c8, (352, 352))
 
         return out_seg
 

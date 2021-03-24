@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from argparse import ArgumentParser
 
 
 def make_datalist(data_fd, data_list):
@@ -8,12 +9,15 @@ def make_datalist(data_fd, data_list):
 
     np.random.shuffle(filename_all)
     np.random.shuffle(filename_all)
-    with open(data_list, 'w') as fp:
+    with open(data_list, 'a') as fp:
         fp.writelines(filename_all)
 
 
 if __name__ == '__main__':
-    data_fd = './data/training_mr'
-    data_list = './data/datalist/training_mr.txt'
+    parser = ArgumentParser()
+    parser.add_argument("-fd", "--data_fd", dest="data_fd")
+    parser.add_argument("-list", "--data_list", dest="data_list")
 
-    make_datalist(data_fd, data_list)
+    args = parser.parse_args()
+
+    make_datalist(args.data_fd, args.data_list)

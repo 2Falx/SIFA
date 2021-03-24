@@ -22,9 +22,11 @@ def _decode_samples(image_list, shuffle=False):
         # label slice of size [256, 256, 3]
         'label_vol': tf.FixedLenFeature([], tf.string)}
 
-    raw_size = [256, 256, 3]
-    volume_size = [256, 256, 3]
-    label_size = [256, 256, 1] # the label has size [256,256,3] in the preprocessed data, but only the middle slice is used
+    #raw_size = [352, 352, 3]
+    #volume_size = [352, 352, 3]
+    #label_size = [352, 352, 1] # the label has size [256,256,3] in the preprocessed data, but only the middle slice is used
+    volume_size = [352, 352, 1]
+    label_size = [352, 352, 4]
 
     data_queue = tf.train.string_input_producer(image_list, shuffle=shuffle)
     reader = tf.TFRecordReader()
@@ -32,16 +34,18 @@ def _decode_samples(image_list, shuffle=False):
     parser = tf.parse_single_example(serialized_example, features=decomp_feature)
 
     data_vol = tf.decode_raw(parser['data_vol'], tf.float32)
-    data_vol = tf.reshape(data_vol, raw_size)
-    data_vol = tf.slice(data_vol, [0, 0, 0], volume_size)
+    data_vol = tf.reshape(data_vol, volume_size)#, raw_size)
+    #data_vol = tf.slice(data_vol, [0, 0, 0], volume_size)#, volume_size)
 
     label_vol = tf.decode_raw(parser['label_vol'], tf.float32)
-    label_vol = tf.reshape(label_vol, raw_size)
-    label_vol = tf.slice(label_vol, [0, 0, 1], label_size)
+    label_vol = tf.reshape(label_vol, label_size)#, raw_size)
+    #label_vol = tf.slice(label_vol, [0, 0, 1], label_size)#, label_size)
 
-    batch_y = tf.one_hot(tf.cast(tf.squeeze(label_vol), tf.uint8), 5)
+    #batch_y = tf.one_hot(tf.cast(tf.squeeze(label_vol), tf.uint8), 5)
+    batch_y = tf.cast(tf.squeeze(label_vol), tf.uint8)
 
-    return tf.expand_dims(data_vol[:, :, 1], axis=2), batch_y
+    #return tf.expand_dims(data_vol[:, :, 1], axis=2), batch_y
+    return data_vol, batch_y
 
 
 def _load_samples(source_pth, target_pth):
@@ -66,7 +70,7 @@ def load_data(source_pth, target_pth, do_shuffle=True):
 
     # For converting the value range to be [-1 1] using the equation 2*[(x-x_min)/(x_max-x_min)]-1.
     # The values {-1.8, 4.4, -2.8, 3.2} need to be changed according to the statistics of specific datasets
-    if 'mr' in source_pth:
+    """if 'mr' in source_pth:
         image_i = tf.subtract(tf.multiply(tf.div(tf.subtract(image_i, -1.8), tf.subtract(4.4, -1.8)), 2.0), 1)
     elif 'ct' in source_pth:
         image_i = tf.subtract(tf.multiply(tf.div(tf.subtract(image_i, -2.8), tf.subtract(3.2, -2.8)), 2.0), 1)
@@ -74,7 +78,7 @@ def load_data(source_pth, target_pth, do_shuffle=True):
     if 'ct' in target_pth:
         image_j = tf.subtract(tf.multiply(tf.div(tf.subtract(image_j, -2.8), tf.subtract(3.2, -2.8)), 2.0), 1)
     elif 'mr' in target_pth:
-        image_j = tf.subtract(tf.multiply(tf.div(tf.subtract(image_j, -1.8), tf.subtract(4.4, -1.8)), 2.0), 1)
+        image_j = tf.subtract(tf.multiply(tf.div(tf.subtract(image_j, -1.8), tf.subtract(4.4, -1.8)), 2.0), 1)"""
 
 
     # Batch
