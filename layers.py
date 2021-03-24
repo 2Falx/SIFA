@@ -44,7 +44,7 @@ def general_conv2d(inputconv, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.01,
 
         if do_norm:
             if norm_type is None:
-                print "normalization type is not specified!"
+                print("normalization type is not specified!")
                 quit()
             elif norm_type=='Ins':
                 conv = instance_norm(conv)
@@ -78,7 +78,7 @@ def general_conv2d_ga(inputconv, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.02
 
         if do_norm:
             if norm_type is None:
-                print "normalization type is not specified!"
+                print("normalization type is not specified!")
                 quit()
             elif norm_type=='Ins':
                 conv = instance_norm(conv)
@@ -107,7 +107,7 @@ def dilate_conv2d(inputconv, i_d=64, o_d=64, f_h=7, f_w=7, rate=2, stddev=0.01,
 
         if do_norm:
             if norm_type is None:
-                print "normalization type is not specified!"
+                print("normalization type is not specified!")
                 quit()
             elif norm_type=='Ins':
                 di_conv_2d = instance_norm(di_conv_2d)
@@ -138,7 +138,7 @@ def general_deconv2d(inputconv, outshape, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1,
 
         if do_norm:
             if norm_type is None:
-                print "normalization type is not specified!"
+                print("normalization type is not specified!")
                 quit()
             elif norm_type=='Ins':
                 conv = instance_norm(conv)
