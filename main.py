@@ -332,8 +332,10 @@ class SIFA:
             sess.run(init)
 
             # Restore the model to run the model from last checkpoint
+            cnt = -1
             if self._to_restore:
                 chkpt_fname = tf.train.latest_checkpoint(self._checkpoint_dir)
+                cnt=int(chkpt_fname.split("sifa-")[1])
                 saver.restore(sess, chkpt_fname)
 
             writer = tf.summary.FileWriter(self._output_dir)
@@ -347,9 +349,8 @@ class SIFA:
 
             # Training Loop
             curr_lr_seg = 0.001
-            cnt = -1
 
-            for i in range(self._max_step):
+            for i in range(cnt+1,self._max_step):
                 starttime = time.time()
 
                 cnt += 1
