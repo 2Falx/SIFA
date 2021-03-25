@@ -16,5 +16,5 @@
   "batch_size": 8,
   "lr_gan_decay": 0,
   "to_restore": 0,
-  "checkpoint_dir": None
+  "checkpoint_dir": ""
 }
