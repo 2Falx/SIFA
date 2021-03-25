@@ -151,14 +151,15 @@ class SIFA:
 
             dice_list = []
             assd_list = []
-            for idx_file, fid in enumerate(test_list):
-              for slice,data in enumerate(np.load(fid)):
-                data=data.transpose(1,2,0)
-                data=data[np.newaxis,...]
-                compact_pred_b_val = sess.run(self.compact_pred_b, feed_dict={self.input_b: data})
-                np.save("{}_{}".format(idx_file,slice),compact_pred_b_val)
-              raise Exception("CULO")
-
+            for fid in test_list:
+              patient_id=fid.split(".npy")[0].split("/")[-1]
+              data=[]
+              for slice in np.load(fid):
+                slice=slice.transpose(1,2,0)
+                slice=slice[np.newaxis,...]
+                compact_pred_b_val = sess.run(self.compact_pred_b, feed_dict={self.input_b: slice})
+                data=compact_pred_b_val if len(data)==0 else np.vstack([data,compact_pred_b_val])
+              np.save("output/{}".format(patient_id),data)
 
 def main(config_filename):
 
