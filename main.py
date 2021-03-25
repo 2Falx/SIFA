@@ -350,7 +350,7 @@ class SIFA:
             # Training Loop
             curr_lr_seg = 0.001
 
-            best=None
+            best=0
             for i in range(cnt+1,self._max_step):
                 starttime = time.time()
 
@@ -524,28 +524,25 @@ class SIFA:
                     writer.add_summary(summary_str_b, cnt)
                     writer.flush()
 
-                    summary_str, summary_str_b = sess.run(
-                        [self.dice_fake_b_mean_summ, self.dice_b_mean_summ], feed_dict={
+                    summary_str, summary_str_b, dice_b = sess.run(
+                        [self.dice_fake_b_mean_summ, self.dice_b_mean_summ, self.dice_b_mean], feed_dict={
                             self.input_a: inputs_val['images_i_val'],
                             self.gt_a: inputs_val['gts_i_val'],
-                            #self.input_b: inputs['images_j'],
-                            #self.gt_b: inputs['gts_j'],
+                            self.input_b: inputs_val['images_j_val'],
+                            self.gt_b: inputs_val['gts_j_val'],
                             self.is_training: False,
                             self.keep_rate: 1.0,
                         })
-                    print(summary_str)
-                    raise Exception(summary_str_b)
-                    if(best is None or best>=summary_str_b):
-                        print(best)
-                        best=summary_str_b
-                        self.save_images(sess, cnt)
-                        saver.save(sess, os.path.join(
-                            self._output_dir, "sifa_best"), global_step=cnt)
                     writer_val.add_summary(summary_str, cnt)
                     writer_val.add_summary(summary_str_b, cnt)
-                    writer_val.add_summary(best, cnt)
                     writer_val.flush()
-                    raise Exception("PROVA")
+
+                    if(best<=dice_b):
+                        print("NEW MAX AT ITER {}: {}".format(cnt,dice_b))
+                        best=dice_b
+                        self.save_images(sess, 0)
+                        saver.save(sess, os.path.join(
+                            self._output_dir, "sifa_best"), global_step=0)
 
                 if (cnt+1) % save_interval ==0:
 
