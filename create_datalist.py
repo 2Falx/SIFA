@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 def make_datalist(data_fd, data_list):
     filename_all = os.listdir(data_fd)
-    filename_all = [data_fd+'/'+filename+'\n' for filename in filename_all if filename.endswith('.tfrecords')]
+    filename_all = [data_fd+'/'+filename+'\n' for filename in filename_all if filename.endswith('.tfrecords') or filename.endswith('.npy')]
 
     np.random.shuffle(filename_all)
     np.random.shuffle(filename_all)
