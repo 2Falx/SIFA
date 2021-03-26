@@ -160,12 +160,6 @@ class SIFA:
         self.dice_b_arr = dice_eval(self.compact_pred_b, self.gt_b, self._num_cls)
         self.dice_b_mean = tf.reduce_mean(self.dice_b_arr)
         self.dice_b_mean_summ = tf.summary.scalar("dice_b", self.dice_b_mean)
-        
-        self.predicter_a = tf.nn.softmax(self.pred_mask_a)
-        self.compact_pred_a = tf.argmax(self.predicter_a, 3)
-        self.dice_a_arr = dice_eval(self.compact_pred_a, self.gt_a, self._num_cls)
-        self.dice_a_mean = tf.reduce_mean(self.dice_a_arr)
-        self.dice_a_mean_summ = tf.summary.scalar("dice_a", self.dice_a_mean)
 
     def compute_losses(self):
 
@@ -356,7 +350,7 @@ class SIFA:
             # Training Loop
             curr_lr_seg = 0.001
 
-            BEST={"A":0,"FAKE_B":0,"B":0}
+            BEST={"A":0,"B":0}
             for i in range(cnt+1,self._max_step):
                 starttime = time.time()
 
@@ -368,7 +362,7 @@ class SIFA:
                     'images_i': images_i,
                     'images_j': images_j,
                     'gts_i': gts_i,
-                    'gts_j': gts_j,
+                    'gts_j': np.zeros(gts_j.shape),
                 }
                 images_i_val, images_j_val, gts_i_val, gts_j_val = sess.run(self.inputs_val)
                 inputs_val = {
@@ -530,8 +524,8 @@ class SIFA:
                     writer.add_summary(summary_str_b, cnt)
                     writer.flush()
 
-                    dice_a, summary_str_a, dice_fake_b, summary_str_fake_b, dice_b, summary_str_b = sess.run(
-                        [self.dice_a_mean, self.dice_a_mean_summ, self.dice_fake_b_mean, self.dice_fake_b_mean_summ, self.dice_b_mean, self.dice_b_mean_summ], feed_dict={
+                    dice_fake_b, summary_str_fake_b, dice_b, summary_str_b = sess.run(
+                        [self.dice_fake_b_mean, self.dice_fake_b_mean_summ, self.dice_b_mean, self.dice_b_mean_summ], feed_dict={
                             self.input_a: inputs_val['images_i_val'],
                             self.gt_a: inputs_val['gts_i_val'],
                             self.input_b: inputs_val['images_j_val'],
@@ -539,24 +533,16 @@ class SIFA:
                             self.is_training: False,
                             self.keep_rate: 1.0,
                         })
-                    writer_val.add_summary(summary_str_a, cnt)
                     writer_val.add_summary(summary_str_fake_b, cnt)
                     writer_val.add_summary(summary_str_b, cnt)
                     writer_val.flush()
 
-                    if(BEST["A"]<=dice_a):
-                        print("NEW BEST_A AT ITER {}: {}".format(cnt,dice_a))
-                        BEST["A"]=dice_a
+                    if(BEST["A"]<=dice_fake_b):
+                        print("NEW BEST_A AT ITER {}: {}".format(cnt,dice_fake_b))
+                        BEST["A"]=dice_fake_b
                         self.save_images(sess, "A")
                         saver.save(sess, os.path.join(
                             self._output_dir, "sifa_A"), global_step=None)
-                    
-                    if(BEST["FAKE_B"]<=dice_fake_b):
-                        print("NEW BEST_FAKE_B AT ITER {}: {}".format(cnt,dice_fake_b))
-                        BEST["FAKE_B"]=dice_fake_b
-                        self.save_images(sess, "FAKE_B")
-                        saver.save(sess, os.path.join(
-                            self._output_dir, "sifa_FAKE_B"), global_step=None)
                     
                     if(BEST["B"]<=dice_b):
                         print("NEW BEST_B AT ITER {}: {}".format(cnt,dice_b))
