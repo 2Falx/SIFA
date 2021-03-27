@@ -1,4 +1,8 @@
 import tensorflow as tf
+import json
+
+with open('./config_param.json') as config_file:
+    config = json.load(config_file)
 
 
 def cycle_consistency_loss(real_images, generated_images):
@@ -28,7 +32,7 @@ def _softmax_weighted_loss(logits, gt):
     Calculate weighted cross-entropy loss.
     """
     softmaxpred = tf.nn.softmax(logits)
-    for i in range(4):
+    for i in range(config["num_cls"]):
         gti = gt[:,:,:,i]
         predi = softmaxpred[:,:,:,i]
         weighted = 1-(tf.reduce_sum(gti) / tf.reduce_sum(gt))
@@ -49,13 +53,13 @@ def _dice_loss_fun(logits, gt):
     dice = 0
     eps = 1e-7
     softmaxpred = tf.nn.softmax(logits)
-    for i in range(4):
+    for i in range(config["num_cls"]):
         inse = tf.reduce_sum(softmaxpred[:, :, :, i]*gt[:, :, :, i])
         l = tf.reduce_sum(softmaxpred[:, :, :, i]*softmaxpred[:, :, :, i])
         r = tf.reduce_sum(gt[:, :, :, i])
         dice += 2.0 * inse/(l+r+eps)
 
-    return 1 - 1.0 * dice / 5
+    return 1 - 1.0 * dice / config["num_cls"]
 
 
 def task_loss(prediction, gt):

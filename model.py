@@ -251,7 +251,7 @@ def build_segmenter(inputse, name='segmenter', keep_rate=0.75):
 
         k1 = 1
 
-        o_c8 = layers.general_conv2d(inputse, 5, k1, k1, 1, 1, 0.01, 'SAME', 'c8', do_norm=False, do_relu=False, keep_rate=keep_rate)
+        o_c8 = layers.general_conv2d(inputse, config["num_cls"], k1, k1, 1, 1, 0.01, 'SAME', 'c8', do_norm=False, do_relu=False, keep_rate=keep_rate)
         out_seg = tf.image.resize_images(o_c8, (352, 352))
 
         return out_seg
