@@ -1,4 +1,6 @@
-import tensorflow as tf
+###import tensorflow as tf
+import tensorflow.compat.v1 as tf ###
+tf.disable_v2_behavior() ###
 
 
 def lrelu(x, leak=0.2, name="lrelu", alt_relu_impl=False):
@@ -14,30 +16,33 @@ def lrelu(x, leak=0.2, name="lrelu", alt_relu_impl=False):
 
 def instance_norm(x):
     with tf.variable_scope("instance_norm"):
-        out = tf.contrib.layers.instance_norm(x)
-
+        ##############################out = tf.layers.instance_norm(x) #tf.contrib.layers
+        out = x ###
         return out
 
 def batch_norm(x, is_training = True):
-
+    import tensorflow.compat.v1 as tf ###
     with tf.variable_scope("batch_norm"):
-        return tf.contrib.layers.batch_norm(x, is_training=is_training, decay=0.90, scale=True, center=True,
-                                            variables_collections=["internal_batchnorm_variables"],
-                                            updates_collections=None)
+        return tf.layers.batch_normalization(x, training=is_training, #decay=0.90,
+                                             scale=True, center=True,
+                                            #variables_collections=["internal_batchnorm_variables"],
+                                            #updates_collections=None
+                                            )
+    #tf.contrib.layers
 
 
 def general_conv2d(inputconv, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.01,
                    padding="VALID", name="conv2d", do_norm=True, do_relu=True, keep_rate=None,
                    relufactor=0, norm_type=None, is_training=True):
     with tf.variable_scope(name):
-
-        conv = tf.contrib.layers.conv2d(
+        #tf.contrib.layers
+        conv = tf.layers.conv2d( 
             inputconv, o_d, f_w, s_w, padding,
-            activation_fn=None,
-            weights_initializer=tf.truncated_normal_initializer(
-                stddev=stddev
-            ),
-            biases_initializer=None
+            #activation_fn=None,
+            #weights_initializer=tf.truncated_normal_initializer(
+                #stddev=stddev
+            #),
+            #biases_initializer=None
         )
         if not keep_rate is None:
             conv = tf.nn.dropout(conv, keep_rate)
@@ -65,13 +70,13 @@ def general_conv2d_ga(inputconv, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.02
                    relufactor=0, norm_type=None, is_training=True):
     with tf.variable_scope(name):
 
-        conv = tf.contrib.layers.conv2d(
+        conv = tf.layers.conv2d(
             inputconv, o_d, f_w, s_w, padding,
-            activation_fn=None,
-            weights_initializer=tf.truncated_normal_initializer(
-                stddev=stddev
-            ),
-            biases_initializer=tf.constant_initializer(0.0)
+            #activation_fn=None,
+            #weights_initializer=tf.truncated_normal_initializer(
+             #   stddev=stddev
+            #),
+            #biases_initializer=tf.constant_initializer(0.0)
         )
         if not keep_rate is None:
             conv = tf.nn.dropout(conv, keep_rate)
@@ -128,12 +133,12 @@ def general_deconv2d(inputconv, outshape, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1,
                      do_norm=True, do_relu=True, relufactor=0, norm_type=None, is_training=True):
     with tf.variable_scope(name):
 
-        conv = tf.contrib.layers.conv2d_transpose(
+        conv = tf.layers.conv2d_transpose(  #tf.contrib.layers
             inputconv, o_d, [f_h, f_w],
             [s_h, s_w], padding,
-            activation_fn=None,
-            weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
-            biases_initializer=tf.constant_initializer(0.0)
+            #activation_fn=None,
+            #weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
+            #biases_initializer=tf.constant_initializer(0.0)
         )
 
         if do_norm:
