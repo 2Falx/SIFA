@@ -1,4 +1,6 @@
-import tensorflow as tf
+###import tensorflow as tf
+import tensorflow.compat.v1 as tf ###
+tf.disable_v2_behavior() ###
 import json
 
 with open('./config_param.json') as config_file:
@@ -9,18 +11,21 @@ BATCH_SIZE = int(config['batch_size'])
 
 def _decode_samples(image_list, shuffle=False):
     decomp_feature = {
+        #Tensorflow 2.x ==> tf.io.FixedLenFeature
+        #Tensorflow 1.x ==> tf.FixedLenFeature
+        
         # image size, dimensions of 3 consecutive slices
-        'dsize_dim0': tf.FixedLenFeature([], tf.int64), # 256
-        'dsize_dim1': tf.FixedLenFeature([], tf.int64), # 256
-        'dsize_dim2': tf.FixedLenFeature([], tf.int64), # 3
+        'dsize_dim0': tf.io.FixedLenFeature([], tf.int64), # 256
+        'dsize_dim1': tf.io.FixedLenFeature([], tf.int64), # 256
+        'dsize_dim2': tf.io.FixedLenFeature([], tf.int64), # 3
         # label size, dimension of the middle slice
-        'lsize_dim0': tf.FixedLenFeature([], tf.int64), # 256
-        'lsize_dim1': tf.FixedLenFeature([], tf.int64), # 256
-        'lsize_dim2': tf.FixedLenFeature([], tf.int64), # 1
+        'lsize_dim0': tf.io.FixedLenFeature([], tf.int64), # 256
+        'lsize_dim1': tf.io.FixedLenFeature([], tf.int64), # 256
+        'lsize_dim2': tf.io.FixedLenFeature([], tf.int64), # 1
         # image slices of size [256, 256, 3]
-        'data_vol': tf.FixedLenFeature([], tf.string),
+        'data_vol': tf.io.FixedLenFeature([], tf.string),
         # label slice of size [256, 256, 3]
-        'label_vol': tf.FixedLenFeature([], tf.string)}
+        'label_vol': tf.io.FixedLenFeature([], tf.string)}
 
     #raw_size = [352, 352, 3]
     #volume_size = [352, 352, 3]
@@ -80,7 +85,7 @@ def load_data(source_pth, target_pth, do_shuffle=True):
     elif 'mr' in target_pth:
         image_j = tf.subtract(tf.multiply(tf.div(tf.subtract(image_j, -1.8), tf.subtract(4.4, -1.8)), 2.0), 1)"""
 
-
+    print("\nLOAD DATA\n")
     # Batch
     if do_shuffle is True:
         images_i, images_j, gt_i, gt_j = tf.train.shuffle_batch([image_i, image_j, gt_i, gt_j], BATCH_SIZE, 500, 100)
