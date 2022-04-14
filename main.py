@@ -7,7 +7,9 @@ import os
 import cv2
 import time
 
-import tensorflow as tf
+###import tensorflow as tf
+import tensorflow.compat.v1 as tf ###
+tf.disable_v2_behavior() ###
 
 import data_loader, losses, model
 from stats_func import *
@@ -25,6 +27,7 @@ class SIFA:
     def __init__(self, config):
         current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
         self._source_train_pth = config['source_train_pth']
+        
         self._target_train_pth = config['target_train_pth']
         self._source_val_pth = config['source_val_pth']
         self._target_val_pth = config['target_val_pth']
@@ -52,72 +55,87 @@ class SIFA:
             (self._pool_size, self._batch_size, model.IMG_HEIGHT, model.IMG_WIDTH, 1))
         self.fake_images_B = np.zeros(
             (self._pool_size, self._batch_size, model.IMG_HEIGHT, model.IMG_WIDTH, 1))
+        ### Starts from images of zeros 
 
     def model_setup(self):
-
-        self.input_a = tf.placeholder(
+        #tf.compat.v1.placeholder()  <== tf.placeholder
+        self.input_a = tf.compat.v1.placeholder(
             tf.float32, [
                 None,
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 1
             ], name="input_A")
-        self.input_b = tf.placeholder(
+        
+        print("\n\n\n INPUT_A\n")
+        print(self.input_a)
+        print("\n")
+        
+        first_dim = None 
+        
+        self.input_b = tf.compat.v1.placeholder(
             tf.float32, [
-                None,
+                None,  
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 1
             ], name="input_B")
-        self.fake_pool_A = tf.placeholder(
+        self.fake_pool_A = tf.compat.v1.placeholder(
             tf.float32, [
-                None,
+                first_dim,
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 1
             ], name="fake_pool_A")
-        self.fake_pool_B = tf.placeholder(
+        
+        self.fake_pool_B = tf.compat.v1.placeholder(
             tf.float32, [
-                None,
+                first_dim,
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 1
             ], name="fake_pool_B")
-        self.gt_a = tf.placeholder(
+        self.gt_a = tf.compat.v1.placeholder(
             tf.float32, [
-                None,
+                first_dim,
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 self._num_cls
             ], name="gt_A")
-        self.gt_b = tf.placeholder(
+        self.gt_b = tf.compat.v1.placeholder(
             tf.float32, [
-                None,
+                first_dim,
                 model.IMG_WIDTH,
                 model.IMG_HEIGHT,
                 self._num_cls
             ], name="gt_B") # for validation only, not used during training
 
-        self.keep_rate = tf.placeholder(tf.float32, shape=())
-        self.is_training = tf.placeholder(tf.bool, shape=())
+        self.keep_rate = tf.compat.v1.placeholder(tf.float32, shape=())
+        self.is_training = tf.compat.v1.placeholder(tf.bool, shape=())
 
-        self.num_fake_inputs = 0
+        self.num_fake_inputs = 0  ### ??
 
-        self.learning_rate_gan = tf.placeholder(tf.float32, shape=[], name="lr_gan")
-        self.learning_rate_seg = tf.placeholder(tf.float32, shape=[], name="lr_seg")
+        self.learning_rate_gan = tf.compat.v1.placeholder(tf.float32, shape=[], name="lr_gan")
+        self.learning_rate_seg = tf.compat.v1.placeholder(tf.float32, shape=[], name="lr_seg")
 
         self.lr_gan_summ = tf.summary.scalar("lr_gan", self.learning_rate_gan)
         self.lr_seg_summ = tf.summary.scalar("lr_seg", self.learning_rate_seg)
 
-        inputs = {
+        inputs = {  #SELF.INPUTS 
             'images_a': self.input_a,
             'images_b': self.input_b,
             'fake_pool_a': self.fake_pool_A,
             'fake_pool_b': self.fake_pool_B,
         }
+        
+        print("\n\nINPUTS\n",inputs)
+        print("\n")
 
         outputs = model.get_outputs(inputs, skip=self._skip, is_training=self.is_training, keep_rate=self.keep_rate)
-
+       
+        print("\n\nOUTPUTS\n",outputs)
+        print("\n")
+        
         self.prob_real_a_is_real = outputs['prob_real_a_is_real']
         self.prob_real_b_is_real = outputs['prob_real_b_is_real']
         self.fake_images_a = outputs['fake_images_a']
@@ -162,7 +180,8 @@ class SIFA:
         self.dice_b_mean_summ = tf.summary.scalar("dice_b", self.dice_b_mean)
 
     def compute_losses(self):
-
+        import tensorflow.compat.v1 as tf ###
+        print("\n\n\nLOSSES\n\n\n")
         cycle_consistency_loss_a = \
             self._lambda_a * losses.cycle_consistency_loss(
                 real_images=self.input_a, generated_images=self.cycle_images_a,
@@ -171,7 +190,10 @@ class SIFA:
             self._lambda_b * losses.cycle_consistency_loss(
                 real_images=self.input_b, generated_images=self.cycle_images_b,
             )
-
+        print("\n\nCYCLE CONSISTENCY LOSS A,B\n")
+        print(cycle_consistency_loss_a,cycle_consistency_loss_b)
+        print("\n")
+        
         lsgan_loss_a = losses.lsgan_loss_generator(self.prob_fake_a_is_real)
         lsgan_loss_b = losses.lsgan_loss_generator(self.prob_fake_b_is_real)
         lsgan_loss_p = losses.lsgan_loss_generator(self.prob_pred_mask_b_is_real)
@@ -249,6 +271,7 @@ class SIFA:
         self.d_P_loss_summ = tf.summary.scalar("d_P_loss", d_loss_P)
         self.d_P_ll_loss_summ = tf.summary.scalar("d_P_loss_ll", d_loss_P_ll)
         self.d_P_loss_merge_summ = tf.summary.merge([self.d_P_loss_summ, self.d_P_ll_loss_summ])
+        
 
     def save_images(self, sess, step):
 
@@ -306,10 +329,15 @@ class SIFA:
                 return fake
 
     def train(self):
-
+        import tensorflow.compat.v1 as tf ###
         # Load Dataset
+        print("\n\n\nLoading Dataset....\n\n\n")
         self.inputs = data_loader.load_data(self._source_train_pth, self._target_train_pth, True)
+        print("\n\n\nSelf.inputs....\n\n\n")
+        print(self.inputs,"\n")
         self.inputs_val = data_loader.load_data(self._source_val_pth, self._target_val_pth, True)
+        print("\n\n\nSelf.inputs VAL....\n\n\n")
+        print(self.inputs_val,"\n")
 
         # Build the network
         self.model_setup()
@@ -317,7 +345,8 @@ class SIFA:
         # Loss function calculations
         self.compute_losses()
 
-        # Initializing the global variables
+        # rializing the global variables
+        print("GLOBAL VARIABLE INIT\n\n")
         init = (tf.global_variables_initializer(),
                 tf.local_variables_initializer())
         saver = tf.train.Saver(max_to_keep=40)
@@ -326,11 +355,28 @@ class SIFA:
             rows_s = fp.readlines()
         with open(self._target_train_pth, 'r') as fp:
             rows_t = fp.readlines()
+        
+        ###They have "\n" at the end ==> It should not be necessary
+        #for i,(s,t) in enumerate(zip(rows_s,rows_t)):
+            #rows_s[i] = s[:-2]
+            #rows_t[i] = t[:-2]
+        
+        print("\nSource\n\n")
+        print(rows_s)
+        
+        print("\nTarget\n\n")
+        print(rows_t)
+        print("\n")
+        
+        
 
         gpu_options = tf.GPUOptions(allow_growth=True)
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        ###############################################
+        print("\nBefore opening GPU session...\n")
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess: #!!!!!!!!!!!!!!
             sess.run(init)
-
+            print("\nAfter opening GPU...\n")
+        ###############################################
             # Restore the model to run the model from last checkpoint
             cnt = -1
             if self._to_restore:
@@ -348,22 +394,32 @@ class SIFA:
             threads = tf.train.start_queue_runners(coord=coord)
 
             # Training Loop
+            
+            print("\n\n TRAINING LOOP \n\n")
+            
             curr_lr_seg = 0.001
 
             BEST={"A":0,"B":0}
             for i in range(cnt+1,self._max_step):
                 starttime = time.time()
+                #ENTER HERE ==> OK 
 
                 cnt += 1
                 curr_lr = self._base_lr
-
-                images_i, images_j, gts_i, gts_j = sess.run(self.inputs)
+                
+                print("self.INPUTS (BEFORE sess.run):\n\n ",self.inputs)
+                print("\n\n")
+                
+                images_i, images_j, gts_i, gts_j = sess.run(self.inputs) #PROBLEM HERE!!
                 inputs = {
                     'images_i': images_i,
                     'images_j': images_j,
                     'gts_i': gts_i,
                     'gts_j': np.zeros(gts_j.shape),
                 }
+                print("INPUTS\n\n", inputs)  ### PROBLEM BEFORE!!!!!!!!!!!
+                print("\n\n")
+                
                 images_i_val, images_j_val, gts_i_val, gts_j_val = sess.run(self.inputs_val)
                 inputs_val = {
                     'images_i_val': images_i_val,
@@ -371,7 +427,9 @@ class SIFA:
                     'gts_i_val': gts_i_val,
                     'gts_j_val': gts_j_val,
                 }
-
+                
+                print("\n\n INPUTS TAKEN\n\n")  
+                
                 # Optimizing the G_A network
                 _, fake_B_temp, summary_str = sess.run(
                     [self.g_A_trainer,
@@ -501,8 +559,8 @@ class SIFA:
                              self.learning_rate_seg: curr_lr_seg,
                          })
 
-                writer.add_summary(summary_str_gan, cnt)
-                writer.add_summary(summary_str_seg, cnt)
+                #writer.add_summary(summary_str_gan, cnt)
+                #writer.add_summary(summary_str_seg, cnt)
 
                 writer.flush()
                 self.num_fake_inputs += 1
@@ -564,11 +622,14 @@ class SIFA:
 
 def main(config_filename):
     
-    tf.set_random_seed(random_seed)
+    #tf.set_random_seed(random_seed) ==> Deprecated
+    tf.compat.v1.set_random_seed(random_seed)
 
     with open(config_filename) as config_file:
         config = json.load(config_file)
-
+        print(f'\n\nConfiguration FIle: \n{config}\n\n')
+       
+    
     sifa_model = SIFA(config)
     sifa_model.train()
 
