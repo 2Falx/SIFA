@@ -578,8 +578,8 @@ class SIFA:
                                                                      self.is_training: False,
                                                                      self.keep_rate: 1.0,
                                                                  })
-                    writer.add_summary(summary_str_fake_b, cnt)
-                    writer.add_summary(summary_str_b, cnt)
+                    #writer.add_summary(summary_str_fake_b, cnt)
+                    #writer.add_summary(summary_str_b, cnt)
                     writer.flush()
 
                     dice_fake_b, summary_str_fake_b, dice_b, summary_str_b = sess.run(
@@ -591,8 +591,8 @@ class SIFA:
                             self.is_training: False,
                             self.keep_rate: 1.0,
                         })
-                    writer_val.add_summary(summary_str_fake_b, cnt)
-                    writer_val.add_summary(summary_str_b, cnt)
+                    #writer_val.add_summary(summary_str_fake_b, cnt)
+                    #writer_val.add_summary(summary_str_b, cnt)
                     writer_val.flush()
 
                     if(BEST["A"]<=dice_fake_b):
