@@ -1,8 +1,8 @@
 {
-  "source_train_pth": "./tfrecords/datalist/train_source.txt",
-  "target_train_pth": "./tfrecords/datalist/train_target.txt",
-  "source_val_pth": "./tfrecords/datalist/val_source.txt",
-  "target_val_pth": "./tfrecords/datalist/val_target.txt",
+  "source_train_pth": "/home/falcetta/data/tfrecords/TOF/trainingTOF.txt",
+  "target_train_pth": "/home/falcetta/data/tfrecords/SWI/trainingSWI.txt",
+  "source_val_pth": "/home/falcetta/data/tfrecords/TOF/validationTOF.txt,
+  "target_val_pth": "/home/falcetta/data/tfrecords/SWI/validationSWI.txt",
   "output_root_dir": "./output",
   "pool_size": 50,
   "_LAMBDA_A": 10,
