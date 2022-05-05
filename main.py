@@ -59,6 +59,7 @@ class SIFA:
 
     def model_setup(self):
         #tf.compat.v1.placeholder()  <== tf.placeholder
+        
         self.input_a = tf.compat.v1.placeholder(
             tf.float32, [
                 None,
@@ -67,9 +68,9 @@ class SIFA:
                 1
             ], name="input_A")
         
-        print("\n\n\n INPUT_A\n")
-        print(self.input_a)
-        print("\n")
+        #print("\n\n\n INPUT_A\n")
+        #print(self.input_a)
+        #print("\n")
         
         first_dim = None 
         
@@ -80,6 +81,7 @@ class SIFA:
                 model.IMG_HEIGHT,
                 1
             ], name="input_B")
+        
         self.fake_pool_A = tf.compat.v1.placeholder(
             tf.float32, [
                 first_dim,
@@ -95,6 +97,7 @@ class SIFA:
                 model.IMG_HEIGHT,
                 1
             ], name="fake_pool_B")
+        
         self.gt_a = tf.compat.v1.placeholder(
             tf.float32, [
                 first_dim,
@@ -102,6 +105,7 @@ class SIFA:
                 model.IMG_HEIGHT,
                 self._num_cls
             ], name="gt_A")
+        
         self.gt_b = tf.compat.v1.placeholder(
             tf.float32, [
                 first_dim,
@@ -128,13 +132,9 @@ class SIFA:
             'fake_pool_b': self.fake_pool_B,
         }
         
-        print("\n\nINPUTS\n",inputs)
-        print("\n")
 
         outputs = model.get_outputs(inputs, skip=self._skip, is_training=self.is_training, keep_rate=self.keep_rate)
        
-        print("\n\nOUTPUTS\n",outputs)
-        print("\n")
         
         self.prob_real_a_is_real = outputs['prob_real_a_is_real']
         self.prob_real_b_is_real = outputs['prob_real_b_is_real']
@@ -179,20 +179,18 @@ class SIFA:
         self.dice_b_mean = tf.reduce_mean(self.dice_b_arr)
         self.dice_b_mean_summ = tf.summary.scalar("dice_b", self.dice_b_mean)
 
-    def compute_losses(self):
+    def compute_losses(self):  #==> CHANGE
         import tensorflow.compat.v1 as tf ###
-        print("\n\n\nLOSSES\n\n\n")
+        
         cycle_consistency_loss_a = \
             self._lambda_a * losses.cycle_consistency_loss(
                 real_images=self.input_a, generated_images=self.cycle_images_a,
             )
+        
         cycle_consistency_loss_b = \
             self._lambda_b * losses.cycle_consistency_loss(
                 real_images=self.input_b, generated_images=self.cycle_images_b,
             )
-        print("\n\nCYCLE CONSISTENCY LOSS A,B\n")
-        print(cycle_consistency_loss_a,cycle_consistency_loss_b)
-        print("\n")
         
         lsgan_loss_a = losses.lsgan_loss_generator(self.prob_fake_a_is_real)
         lsgan_loss_b = losses.lsgan_loss_generator(self.prob_fake_b_is_real)
@@ -202,12 +200,13 @@ class SIFA:
 
         ce_loss_b, dice_loss_b = losses.task_loss(self.pred_mask_fake_b, self.gt_a)
         ce_loss_b_ll, dice_loss_b_ll = losses.task_loss(self.pred_mask_fake_b_ll, self.gt_a)
+        
         l2_loss_b = tf.add_n([0.0001 * tf.nn.l2_loss(v) for v in tf.trainable_variables() if '/s_B/' in v.name or '/s_B_ll/' in v.name or '/e_B/' in v.name])
 
 
         g_loss_A = cycle_consistency_loss_a + cycle_consistency_loss_b + lsgan_loss_b
         g_loss_B = cycle_consistency_loss_b + cycle_consistency_loss_a + lsgan_loss_a
-
+        
         seg_loss_B = ce_loss_b + dice_loss_b + l2_loss_b + 0.1 * (ce_loss_b_ll + dice_loss_b_ll) + 0.1 * g_loss_B + 0.1 * lsgan_loss_p + 0.01 * lsgan_loss_p_ll + 0.1 * lsgan_loss_a_aux
 
         d_loss_A = losses.lsgan_loss_discriminator(
@@ -232,10 +231,11 @@ class SIFA:
             prob_fake_is_real=self.prob_pred_mask_b_ll_is_real,
         )
 
+        #Optimizer
         optimizer_gan = tf.train.AdamOptimizer(self.learning_rate_gan, beta1=0.5)
         optimizer_seg = tf.train.AdamOptimizer(self.learning_rate_seg)
 
-        self.model_vars = tf.trainable_variables()
+        self.model_vars = tf.trainable_variables() # ==> Trainable vars
 
         d_A_vars = [var for var in self.model_vars if '/d_A/' in var.name]
         d_B_vars = [var for var in self.model_vars if '/d_B/' in var.name]
@@ -247,6 +247,7 @@ class SIFA:
         d_P_vars = [var for var in self.model_vars if '/d_P/' in var.name]
         d_P_ll_vars = [var for var in self.model_vars if '/d_P_ll/' in var.name]
 
+        # Minimize
         self.d_A_trainer = optimizer_gan.minimize(d_loss_A, var_list=d_A_vars)
         self.d_B_trainer = optimizer_gan.minimize(d_loss_B, var_list=d_B_vars)
         self.g_A_trainer = optimizer_gan.minimize(g_loss_A, var_list=g_A_vars)
@@ -273,7 +274,7 @@ class SIFA:
         self.d_P_loss_merge_summ = tf.summary.merge([self.d_P_loss_summ, self.d_P_ll_loss_summ])
         
 
-    def save_images(self, sess, step):
+    def save_images(self, sess, step): # ==> Save in nii.gz instaed of jpg
 
         if not os.path.exists(self._images_dir):
             os.makedirs(self._images_dir)
@@ -309,9 +310,13 @@ class SIFA:
                            fake_B_temp, fake_A_temp, cyc_A_temp, cyc_B_temp]
 
                 for name, tensor in zip(names, tensors):
+                    
                     image_name = name + str(step) + "_" + str(i) + ".jpg"
+                    
                     cv2.imwrite(os.path.join(self._images_dir, image_name), ((tensor[0] + 1) * 127.5).astype(np.uint8).squeeze())
+                        
                     v_html.write("<img src=\"" + os.path.join('imgs', image_name) + "\">")
+                
                 v_html.write("<br>")
 
     def fake_image_pool(self, num_fakes, fake, fake_pool):
@@ -333,11 +338,11 @@ class SIFA:
         # Load Dataset
         print("\n\n\nLoading Dataset....\n\n\n")
         self.inputs = data_loader.load_data(self._source_train_pth, self._target_train_pth, True)
-        print("\n\n\nSelf.inputs....\n\n\n")
-        print(self.inputs,"\n")
+        #print("\n\n\nSelf.inputs....\n\n\n")
+        #print(self.inputs,"\n")
         self.inputs_val = data_loader.load_data(self._source_val_pth, self._target_val_pth, True)
-        print("\n\n\nSelf.inputs VAL....\n\n\n")
-        print(self.inputs_val,"\n")
+        #print("\n\n\nSelf.inputs VAL....\n\n\n")
+        #print(self.inputs_val,"\n")
 
         # Build the network
         self.model_setup()
@@ -345,7 +350,7 @@ class SIFA:
         # Loss function calculations
         self.compute_losses()
 
-        # rializing the global variables
+        # initializing the global variables
         print("GLOBAL VARIABLE INIT\n\n")
         init = (tf.global_variables_initializer(),
                 tf.local_variables_initializer())
@@ -361,12 +366,12 @@ class SIFA:
             #rows_s[i] = s[:-2]
             #rows_t[i] = t[:-2]
         
-        print("\nSource\n\n")
-        print(rows_s)
+        #print("\nSource\n\n")
+        #print(rows_s)
         
-        print("\nTarget\n\n")
-        print(rows_t)
-        print("\n")
+        #print("\nTarget\n\n")
+        #print(rows_t)
+        #print("\n")
         
         
 
@@ -407,18 +412,18 @@ class SIFA:
                 cnt += 1
                 curr_lr = self._base_lr
                 
-                print("self.INPUTS (BEFORE sess.run):\n\n ",self.inputs)
-                print("\n\n")
+                #print("self.INPUTS (BEFORE sess.run):\n\n ",self.inputs)
+                #print("\n\n")
                 
-                images_i, images_j, gts_i, gts_j = sess.run(self.inputs) #PROBLEM HERE!!
+                images_i, images_j, gts_i, gts_j = sess.run(self.inputs)
                 inputs = {
                     'images_i': images_i,
                     'images_j': images_j,
                     'gts_i': gts_i,
-                    'gts_j': np.zeros(gts_j.shape),
+                    'gts_j': np.zeros(gts_j.shape), ## TODO Già fatto prima ==> Togliere e mettere gts_j
                 }
-                print("INPUTS\n\n", inputs)  ### PROBLEM BEFORE!!!!!!!!!!!
-                print("\n\n")
+                #print("INPUTS\n\n", inputs)
+                #print("\n\n")
                 
                 images_i_val, images_j_val, gts_i_val, gts_j_val = sess.run(self.inputs_val)
                 inputs_val = {
@@ -627,8 +632,6 @@ def main(config_filename):
 
     with open(config_filename) as config_file:
         config = json.load(config_file)
-        print(f'\n\nConfiguration FIle: \n{config}\n\n')
-       
     
     sifa_model = SIFA(config)
     sifa_model.train()
