@@ -31,7 +31,7 @@ def _decode_samples(image_list, shuffle=False):
     #volume_size = [352, 352, 3]
     #label_size = [352, 352, 1] # the label has size [256,256,3] in the preprocessed data, but only the middle slice is used
     volume_size = [352, 352, 1]
-    label_size = [352, 352, 4]
+    label_size = [352, 352, 2]
 
     data_queue = tf.train.string_input_producer(image_list, shuffle=shuffle)
     reader = tf.TFRecordReader()
@@ -48,7 +48,7 @@ def _decode_samples(image_list, shuffle=False):
 
     #batch_y = tf.one_hot(tf.cast(tf.squeeze(label_vol), tf.uint8), 5)
     batch_y = tf.cast(tf.squeeze(label_vol), tf.uint8)
-
+    
     #return tf.expand_dims(data_vol[:, :, 1], axis=2), batch_y
     return data_vol, batch_y
 
@@ -65,7 +65,6 @@ def _load_samples(source_pth, target_pth):
 
     data_vola, label_vola = _decode_samples(imagea_list, shuffle=True)
     data_volb, label_volb = _decode_samples(imageb_list, shuffle=True)
-
     return data_vola, data_volb, label_vola, label_volb
 
 

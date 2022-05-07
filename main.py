@@ -68,9 +68,6 @@ class SIFA:
                 1
             ], name="input_A")
         
-        #print("\n\n\n INPUT_A\n")
-        #print(self.input_a)
-        #print("\n")
         
         first_dim = None 
         
@@ -117,7 +114,7 @@ class SIFA:
         self.keep_rate = tf.compat.v1.placeholder(tf.float32, shape=())
         self.is_training = tf.compat.v1.placeholder(tf.bool, shape=())
 
-        self.num_fake_inputs = 0  ### ??
+        self.num_fake_inputs = 0
 
         self.learning_rate_gan = tf.compat.v1.placeholder(tf.float32, shape=[], name="lr_gan")
         self.learning_rate_seg = tf.compat.v1.placeholder(tf.float32, shape=[], name="lr_seg")
@@ -286,6 +283,7 @@ class SIFA:
             for i in range(0, self._num_imgs_to_save):
 
                 images_i, images_j, gts_i, gts_j = sess.run(self.inputs)
+         
                 inputs = {
                     'images_i': images_i,
                     'images_j': images_j,
@@ -338,12 +336,8 @@ class SIFA:
         # Load Dataset
         print("\n\n\nLoading Dataset....\n\n\n")
         self.inputs = data_loader.load_data(self._source_train_pth, self._target_train_pth, True)
-        #print("\n\n\nSelf.inputs....\n\n\n")
-        #print(self.inputs,"\n")
         self.inputs_val = data_loader.load_data(self._source_val_pth, self._target_val_pth, True)
-        #print("\n\n\nSelf.inputs VAL....\n\n\n")
-        #print(self.inputs_val,"\n")
-
+        
         # Build the network
         self.model_setup()
 
@@ -415,7 +409,7 @@ class SIFA:
                 #print("self.INPUTS (BEFORE sess.run):\n\n ",self.inputs)
                 #print("\n\n")
                 
-                images_i, images_j, gts_i, gts_j = sess.run(self.inputs)
+                images_i, images_j, gts_i, gts_j = sess.run(self.inputs) ##########
                 inputs = {
                     'images_i': images_i,
                     'images_j': images_j,
@@ -433,7 +427,7 @@ class SIFA:
                     'gts_j_val': gts_j_val,
                 }
                 
-                print("\n\n INPUTS TAKEN\n\n")  
+                print("\n\n...INPUTS TAKEN... ==> START ITERATION!\n\n")  
                 
                 # Optimizing the G_A network
                 _, fake_B_temp, summary_str = sess.run(
@@ -452,6 +446,7 @@ class SIFA:
                         self.is_training:self._is_training_value,
                     }
                 )
+                
                 writer.add_summary(summary_str, cnt)
 
                 fake_B_temp1 = self.fake_image_pool(
