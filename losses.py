@@ -23,15 +23,20 @@ def lsgan_loss_generator(prob_fake_is_real):
 
 def lsgan_loss_discriminator(prob_real_is_real, prob_fake_is_real):
     """
-    Computes the LS-GAN loss as minimized by the discriminator.
+    Computes the LS-GAN loss as minimized by the discriminator. (LS = Least Square)
     """
     return (tf.reduce_mean(tf.squared_difference(prob_real_is_real, 1)) +
             tf.reduce_mean(tf.squared_difference(prob_fake_is_real, 0))) * 0.5
 
 
+
+
+
+
+
 def _softmax_weighted_loss(logits, gt):
     """
-    Calculate weighted cross-entropy loss.
+    Calculate weighted cross-entropy loss. ==> Segmentation
     """
     softmaxpred = tf.nn.softmax(logits)
     for i in range(config["num_cls"]):
@@ -50,7 +55,7 @@ def _softmax_weighted_loss(logits, gt):
 
 def _dice_loss_fun(logits, gt):
     """
-    Calculate dice loss.
+    Calculate dice loss. ==> Segmentation
     """
     dice = 0
     eps = 1e-7
@@ -66,7 +71,7 @@ def _dice_loss_fun(logits, gt):
 
 def task_loss(prediction, gt):
     """
-    Calculate task loss, which consists of the weighted cross entropy loss and dice loss
+    Calculate task loss, which consists of the weighted cross entropy loss and dice loss ==> Segmentation
     """
     ce_loss = _softmax_weighted_loss(prediction, gt)
     dice_loss = _dice_loss_fun(prediction, gt)

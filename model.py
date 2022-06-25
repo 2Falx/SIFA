@@ -50,7 +50,8 @@ def get_outputs(inputs, skip=False, is_training=True, keep_rate=0.75):
         prob_fake_a_is_real, prob_fake_a_aux_is_real = discriminator_aux(fake_images_a, "d_A")
         prob_fake_b_is_real = current_discriminator(fake_images_b, "d_B")
 
-        latent_fake_b, latent_fake_b_ll = current_encoder(fake_images_b, 'e_B', skip=skip, is_training=is_training, keep_rate=keep_rate)
+        latent_fake_b, latent_fake_b_ll = current_encoder(fake_images_b, 'e_B', skip=skip,
+                                                          is_training=is_training, keep_rate=keep_rate)
         cycle_images_b = build_generator_resnet_9blocks(fake_images_a, fake_images_a, 'g_A', skip=skip)
 
         cycle_images_a = current_decoder(latent_fake_b, fake_images_b, 'de_B', skip=skip)
@@ -139,7 +140,7 @@ def build_drn_block(inputdrn, dim, name="drn", padding="REFLECT", norm_type=None
 
         return tf.nn.relu(out_drn + inputdrn)
 
-
+#Not used here
 def build_drn_block_ds(inputdrn, dim_in, dim_out, name='drn_ds', padding="REFLECT", norm_type=None, is_training=True, keep_rate=0.75):
     with tf.variable_scope(name):
         out_drn = tf.pad(inputdrn, [[0,0], [2,2], [2,2], [0,0]], padding)
@@ -191,34 +192,48 @@ def build_encoder(inputen, name='encoder', skip=False, is_training=True, keep_ra
         k1 = 3
         padding = "CONSTANT"
 
-        o_c1 = layers.general_conv2d(inputen, fb, 7, 7, 1, 1, 0.01, 'SAME', name="c1", norm_type="Batch", is_training=is_training, keep_rate=keep_rate)
+        o_c1 = layers.general_conv2d(inputen, fb, 7, 7, 1, 1, 0.01, 'SAME', name="c1", norm_type="Batch",
+                                     is_training=is_training, keep_rate=keep_rate)
         o_r1 = build_resnet_block(o_c1, fb, "r1", padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
         out1 = tf.nn.max_pool(o_r1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-        o_r2 = build_resnet_block_ds(out1, fb, fb*2, "r2", padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r2 = build_resnet_block_ds(out1, fb, fb*2, "r2", padding, norm_type='Batch',
+                                     is_training=is_training, keep_rate=keep_rate)
         out2 = tf.nn.max_pool(o_r2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-        o_r3 = build_resnet_block_ds(out2, fb*2, fb*4, 'r3', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
-        o_r4 = build_resnet_block(o_r3, fb*4, 'r4', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r3 = build_resnet_block_ds(out2, fb*2, fb*4, 'r3', padding, norm_type='Batch',
+                                     is_training=is_training, keep_rate=keep_rate)
+        o_r4 = build_resnet_block(o_r3, fb*4, 'r4', padding, norm_type='Batch',
+                                  is_training=is_training, keep_rate=keep_rate)
         out3 = tf.nn.max_pool(o_r4, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-        o_r5 = build_resnet_block_ds(out3, fb*4, fb*8, 'r5', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
-        o_r6 = build_resnet_block(o_r5, fb*8, 'r6', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r5 = build_resnet_block_ds(out3, fb*4, fb*8, 'r5', padding, norm_type='Batch',
+                                     is_training=is_training, keep_rate=keep_rate)
+        o_r6 = build_resnet_block(o_r5, fb*8, 'r6', padding, norm_type='Batch',
+                                  is_training=is_training, keep_rate=keep_rate)
 
-        o_r7 = build_resnet_block_ds(o_r6, fb*8, fb*16, 'r7', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
-        o_r8 = build_resnet_block(o_r7, fb*16, 'r8', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r7 = build_resnet_block_ds(o_r6, fb*8, fb*16, 'r7', padding, norm_type='Batch',
+                                     is_training=is_training, keep_rate=keep_rate)
+        o_r8 = build_resnet_block(o_r7, fb*16, 'r8', padding, norm_type='Batch',
+                                  is_training=is_training, keep_rate=keep_rate)
 
-        o_r9 = build_resnet_block(o_r8, fb*16, 'r9', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
-        o_r10 = build_resnet_block(o_r9, fb * 16, 'r10', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r9 = build_resnet_block(o_r8, fb*16, 'r9', padding, norm_type='Batch',
+                                  is_training=is_training, keep_rate=keep_rate)
+        o_r10 = build_resnet_block(o_r9, fb * 16, 'r10', padding, norm_type='Batch',
+                                   is_training=is_training, keep_rate=keep_rate)
 
-        o_r11 = build_resnet_block_ds(o_r10, fb * 16, fb * 32, 'r11', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
-        o_r12 = build_resnet_block(o_r11, fb * 32, 'r12', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_r11 = build_resnet_block_ds(o_r10, fb * 16, fb * 32, 'r11', padding, norm_type='Batch',
+                                      is_training=is_training, keep_rate=keep_rate)
+        o_r12 = build_resnet_block(o_r11, fb * 32, 'r12', padding, norm_type='Batch',
+                                   is_training=is_training, keep_rate=keep_rate)
 
         o_d1 = build_drn_block(o_r12, fb*32, 'd1', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
         o_d2 = build_drn_block(o_d1, fb*32, 'd2', padding, norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
 
-        o_c2 = layers.general_conv2d(o_d2, fb*32, k1, k1, 1, 1, 0.01, 'SAME', 'c2', norm_type='Batch', is_training=is_training,keep_rate=keep_rate)
-        o_c3 = layers.general_conv2d(o_c2, fb*32, k1, k1, 1, 1, 0.01, 'SAME', 'c3', norm_type='Batch', is_training=is_training, keep_rate=keep_rate)
+        o_c2 = layers.general_conv2d(o_d2, fb*32, k1, k1, 1, 1, 0.01, 'SAME', 'c2', norm_type='Batch',
+                                     is_training=is_training,keep_rate=keep_rate)
+        o_c3 = layers.general_conv2d(o_c2, fb*32, k1, k1, 1, 1, 0.01, 'SAME', 'c3', norm_type='Batch',
+                                     is_training=is_training, keep_rate=keep_rate)
 
 
         return o_c3, o_r12
@@ -235,8 +250,10 @@ def build_decoder(inputde, inputimg, name='decoder', skip=False):
         o_r2 = build_resnet_block(o_r1, ngf * 4, "r2", padding, norm_type='Ins')
         o_r3 = build_resnet_block(o_r2, ngf * 4, "r3", padding, norm_type='Ins')
         o_r4 = build_resnet_block(o_r3, ngf * 4, "r4", padding, norm_type='Ins')
-        o_c3 = layers.general_deconv2d(o_r4, [BATCH_SIZE, 88, 88, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c3", norm_type='Ins')
-        o_c4 = layers.general_deconv2d(o_c3, [BATCH_SIZE, 176, 176, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02, "SAME", "c4", norm_type='Ins')
+        o_c3 = layers.general_deconv2d(o_r4, [BATCH_SIZE, 88, 88, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02,
+                                       "SAME", "c3", norm_type='Ins')
+        o_c4 = layers.general_deconv2d(o_c3, [BATCH_SIZE, 176, 176, ngf * 2], ngf * 2, ks, ks, 2, 2, 0.02,
+                                       "SAME", "c4", norm_type='Ins')
         o_c5 = layers.general_deconv2d(o_c4, [BATCH_SIZE, 352, 352, ngf], ngf, ks, ks, 2, 2, 0.02, "SAME", "c5", norm_type='Ins')
         o_c6 = layers.general_conv2d(o_c5, 1, f, f, 1, 1, 0.02, "SAME", "c6", do_norm=False, do_relu=False)
 

@@ -40,10 +40,14 @@ def _decode_samples(image_list, shuffle=False):
 
     data_vol = tf.decode_raw(parser['data_vol'], tf.float32)
     data_vol = tf.reshape(data_vol, volume_size)#, raw_size)
+    #(352,352,2)
+       
     #data_vol = tf.slice(data_vol, [0, 0, 0], volume_size)#, volume_size)
 
     label_vol = tf.decode_raw(parser['label_vol'], tf.float32)
-    label_vol = tf.reshape(label_vol, label_size)#, raw_size)
+    label_vol = tf.reshape(label_vol, label_size)#, raw_size) 
+    #(352,352,2)
+    
     #label_vol = tf.slice(label_vol, [0, 0, 1], label_size)#, label_size)
 
     #batch_y = tf.one_hot(tf.cast(tf.squeeze(label_vol), tf.uint8), 5)
@@ -84,11 +88,11 @@ def load_data(source_pth, target_pth, do_shuffle=True):
     elif 'mr' in target_pth:
         image_j = tf.subtract(tf.multiply(tf.div(tf.subtract(image_j, -1.8), tf.subtract(4.4, -1.8)), 2.0), 1)"""
 
-    print("\nLOAD DATA\n")
     # Batch
     if do_shuffle is True:
         images_i, images_j, gt_i, gt_j = tf.train.shuffle_batch([image_i, image_j, gt_i, gt_j], BATCH_SIZE, 500, 100)
     else:
-        images_i, images_j, gt_i, gt_j = tf.train.batch([image_i, image_j, gt_i, gt_j], batch_size=BATCH_SIZE, num_threads=1, capacity=500)
+        images_i, images_j, gt_i, gt_j = tf.train.batch([image_i, image_j, gt_i, gt_j], \
+                                                        batch_size=BATCH_SIZE, num_threads=1, capacity=500)
 
     return images_i, images_j, gt_i, gt_j
