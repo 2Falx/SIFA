@@ -19,6 +19,12 @@ IEEE Transactions on Medical Imaging
 
 ## How to run
 
+      !git clone https://github.com/2Falx/SIFA-Tensorflow2.git
+
+      !mv {your_data_folder} SIFA-Tensorflow2
+
+      %cd SIFA-Tensorflow2/
+
 
 * Open and follow the "SIFA_Implementation_Tf2-.ipynb" jupyter notebook modifying the indicated variable and parameters to adapt it to your dataset.
 * Set the home_path in Cell #3 (here it corresponds to the same folder of the above mentioned notebook).
