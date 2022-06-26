@@ -14,7 +14,7 @@ IEEE Transactions on Medical Imaging
 <br/>
 <br/>
 <p align="center">
-  <img src="SIFA/figure/framework.png">
+  <img src="Network.jpg">
 </p>
 
 ## How to run
