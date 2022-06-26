@@ -18,15 +18,24 @@ IEEE Transactions on Medical Imaging
 </p>
 
 ## How to run
+
+
 * Open and follow the "SIFA_Implementation_Tf2-.ipynb" jupyter notebook modifying the indicated variable and parameters to adapt it to your dataset.
-* Set the home_path in cell #3 (here it corresponds to the same folder of the above mentioned notebook).
+* [N.B.] Cell Numbers (#n) are the one indicated in the current version of the used jupyter notebook and correspond to the In [n]: numbering of the cell
+* Set the home_path in Cell #3 (here it corresponds to the same folder of the above mentioned notebook).
 * Store your data inside a folder "data" in the home_path
 * Store SWI images in /data/SWI and TOF images in /data/TOF (You can find an example folder for a single 3D image in cell #6)
 * Select the wanted Spacing in cell #13 to allow images resizing (here SWI Spacing is chosen)
 * Cell #23 contains all the useful statistics for OUR dataset: comment the last line to use the extracted ones from your data
 * Slices are preprocessed in Cell #31 and transformed into Tfrecord in Cell #34 (Here you can modify the "tfrecords_folder" name)
 * Modify the "percentage" parameter in the "split_file" function (Cell #35) to select the wanted train/validation split percentage
-* 
+* You can use (or modify) the function in Cell #38 to remove previous SIFA Training outputs
+* Cell #43 contains all the parameters you can set before the training
+* Start Training by running Cell #44
+
+* "Print losses" Section contains some Cells in order to create a "tot_losses.csv" file containing the loss-trend for each model loss given the name of an output folder ("date" variable, Cell #47). You can fine your file inside the "{date}/losses" path.
+* You can also uncomment the last lines of Cell #63 to remove all the saved model of the selected output to save some space
+* Last Section contains some Cells in order to plot all the Loss-Curves given the complete path of a .csv file ("file_name " variable, Cell #67)
 
 
 ## Data Preparation
