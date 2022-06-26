@@ -14,10 +14,11 @@ IEEE Transactions on Medical Imaging
 <br/>
 <br/>
 <p align="center">
-  <img src="figure/framework.png">
+  <img src="SIFA/figure/framework.png">
 </p>
 
-## Installation
+## How to run
+Follow the "SIFA_Implementation_Tf2-.ipynb" jupyer notebook and modify the parameters 
 
 ## Data Preparation
 
