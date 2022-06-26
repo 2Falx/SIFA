@@ -14,7 +14,7 @@ IEEE Transactions on Medical Imaging
 <br/>
 <br/>
 <p align="center">
-  <img src="Network.jpg">
+  <img src="Network.png">
 </p>
 
 ## How to run
