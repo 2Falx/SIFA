@@ -18,7 +18,16 @@ IEEE Transactions on Medical Imaging
 </p>
 
 ## How to run
-Follow the "SIFA_Implementation_Tf2-.ipynb" jupyer notebook and modify the parameters 
+* Open and follow the "SIFA_Implementation_Tf2-.ipynb" jupyter notebook modifying the indicated variable and parameters to adapt it to your dataset.
+* Set the home_path in cell #3 (here it corresponds to the same folder of the above mentioned notebook).
+* Store your data inside a folder "data" in the home_path
+* Store SWI images in /data/SWI and TOF images in /data/TOF (You can find an example folder for a single 3D image in cell #6)
+* Select the wanted Spacing in cell #13 to allow images resizing (here SWI Spacing is chosen)
+* Cell #23 contains all the useful statistics for OUR dataset: comment the last line to use the extracted ones from your data
+* Slices are preprocessed in Cell #31 and transformed into Tfrecord in Cell #34 (Here you can modify the "tfrecords_folder" name)
+* Modify the "percentage" parameter in the "split_file" function (Cell #35) to select the wanted train/validation split percentage
+* 
+
 
 ## Data Preparation
 
