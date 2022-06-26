@@ -450,11 +450,11 @@ class SIFA:
                 
                 # See model.py get_outputs() returns for further details
                 ''' 
-                   'pred_mask_a' = 'pred_mask_b': Predicted mask for the X_t image
-                   'pred_mask_b_ll': Predicted mask for the X_s_ll image
-                   'pred_mask_fake_a' = 'pred_mask_fake_b': Predicted mask for the Xs>t image
-                   'pred_mask_fake_b_ll': Predicted mask for the X_s>t_ll image
-                   'gt':Ground Truth, Real segmentation mask of the X_s image
+                   'pred_mask_a' = 'pred_mask_b': Predicted mask for the X_t image (Pred Y_t)
+                   'pred_mask_b_ll': Predicted mask for the X_s_ll // X_t>s image (Pred Y_t>s)
+                   'pred_mask_fake_a' = 'pred_mask_fake_b': Predicted mask for the X_s image (Pred Y_s)
+                   'pred_mask_fake_b_ll': Predicted mask for the X_s>t_ll // X_s>t image (Pred Y_s>t)
+                   'gt':Ground Truth, Real segmentation mask of the X_s image (Real Y_s)
                 '''
                 mask_names =['pred_mask_a', 'pred_mask_b', 'pred_mask_b_ll', 'pred_mask_fake_a' ,'pred_mask_fake_b',
                             'pred_mask_fake_b_ll','gt']
