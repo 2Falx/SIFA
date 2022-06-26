@@ -39,6 +39,15 @@ IEEE Transactions on Medical Imaging
 
 
 ## Data Preparation
+* Spacing Extraction
+* Slicing and Reshaping
+* Standardization using mean and std over the Volume of the slice
+* Normalization using min and max over the whole dataset
+* Slice Preprocessing:
+  1. Center Crop
+  2. Zero Padding
+  3. Add 1 dim / One-hot-Encoding
+  4. Transformation into Tfrecord
 
 ## Training Result
 
